@@ -8,16 +8,15 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
+type Error struct {
+	Message string
+}
 type Car struct {
-	Id       int
+	Id       int `json:"id,string,omitempty"`
 	Producer string
 	Model    string
 	Year     string
 	Vin      string
-}
-
-func (c *Car) Describe() string {
-	return c.Producer + c.Model + c.Year + c.Vin
 }
 
 type Client struct {
@@ -64,30 +63,39 @@ func GetCars() string {
 	return enc
 }
 
-func GetCar(id int) string {
+func CreateCar(c Car) string {
 	InitDb()
-	row := Db.QueryRow("select * from cars where id=$1", id)
-	var c Car
-	var enc string
-	switch err := row.Scan(&c.Id, &c.Producer, &c.Model, &c.Year, &c.Vin); err {
-	case sql.ErrNoRows:
-		fmt.Println("No rows were returned!")
-		errMap := map[string]string{
-			"error": "invalid id",
-		}
+	res, err := Db.Exec("insert into cars (producer, model, year, vin) values ($1, $2, $3, $4)", c.Producer, c.Model, c.Year, c.Vin)
+	checkErr(err)
+	fmt.Println(res)
+	r, err := json.Marshal(c)
+	checkErr(err)
+	return string(r)
+}
 
-		errJson, err := json.Marshal(errMap)
-		checkErr(err)
-		return string(errJson)
-	default:
-		//panic(err)
-		b, err := json.Marshal(c)
-		checkErr(err)
-		enc = string(b)
+func UpdateCar(c Car) string {
+	InitDb()
+	res, err := Db.Exec("update cars set producer = $1, model = $2, year = $3, vin = $4 where id = $5", c.Producer, c.Model, c.Year, c.Vin, c.Id)
+	checkErr(err)
+	fmt.Println(res.RowsAffected())
+	ret := map[string]string{
+		"result": "ok",
 	}
-	//checkErr(err)
-	defer Db.Close()
-	return enc
+	r, err := json.Marshal(ret)
+	checkErr(err)
+	return string(r)
+}
+func DeleteCar(id int) string {
+	InitDb()
+	res, err := Db.Exec("delete from cars where id = $1", id)
+	checkErr(err)
+	fmt.Println(res.RowsAffected())
+	ret := map[string]string{
+		"result": "ok",
+	}
+	r, err := json.Marshal(ret)
+	checkErr(err)
+	return string(r)
 }
 
 func checkErr(err error) {
