@@ -3,23 +3,23 @@ package main
 import (
 	//"mux"
 
+	"app/models"
 	"fmt"
 	"io"
 	"net/http"
+	"strconv"
 
 	//"github.com/gorilla/mux"
-	"database/sql"
 
 	"github.com/gorilla/mux"
 	_ "github.com/mattn/go-sqlite3"
 )
 
 func main() {
-	db, err := sql.Open("sqlite3", "db.db")
-	checkErr(err)
-	fmt.Println(db)
 	router := mux.NewRouter()
-	router.HandleFunc("/api/test", getRoot)
+	router.HandleFunc("/api/getCars", getCars)
+	router.HandleFunc("/api/getCar", getCar)
+
 	http.ListenAndServe(":8010", router)
 
 }
@@ -30,7 +30,14 @@ func checkErr(err error) {
 	}
 }
 
-func getRoot(w http.ResponseWriter, r *http.Request) {
-	fmt.Printf("got / request\n")
-	io.WriteString(w, "test\n")
+func getCars(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("got getCars request")
+	io.WriteString(w, models.GetCars()+"\n")
+}
+
+func getCar(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("got getCar request, id=", r.URL.Query().Get("id"))
+	id, err := strconv.Atoi(r.URL.Query().Get("id"))
+	checkErr(err)
+	io.WriteString(w, models.GetCar(id))
 }
