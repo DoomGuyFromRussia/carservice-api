@@ -68,13 +68,8 @@ func createCar(w http.ResponseWriter, r *http.Request) {
 	var c models.Car
 	err := decoder.Decode(&c)
 	checkErr(err)
-	if !carValid(c) {
-		ret := map[string]string{
-			"error": "null values",
-		}
-		r, err := json.Marshal(ret)
-		checkErr(err)
-		io.WriteString(w, string(r))
+	if !c.Validate() {
+		sendErrorJson(w, r, "validation fail")
 	} else {
 
 		io.WriteString(w, models.CreateCar(c)+"\n")
@@ -87,8 +82,12 @@ func createClient(w http.ResponseWriter, r *http.Request) {
 	var c models.Client
 	err := decoder.Decode(&c)
 	checkErr(err)
-	//validation here
-	io.WriteString(w, models.CreateClient(c)+"\n")
+	if !c.Validate() {
+		sendErrorJson(w, r, "validation fail")
+	} else {
+
+		io.WriteString(w, models.CreateClient(c)+"\n")
+	}
 }
 
 func createOrder(w http.ResponseWriter, r *http.Request) {
@@ -98,8 +97,11 @@ func createOrder(w http.ResponseWriter, r *http.Request) {
 	err := decoder.Decode(&o)
 	checkErr(err)
 	fmt.Println("main desc", o.Description)
-	//validation here
-	io.WriteString(w, models.CreateOrder(o)+"\n")
+	if !o.Validate() {
+		sendErrorJson(w, r, "validation fail")
+	} else {
+		io.WriteString(w, models.CreateOrder(o)+"\n")
+	}
 }
 
 func updateCar(w http.ResponseWriter, r *http.Request) {
@@ -108,13 +110,8 @@ func updateCar(w http.ResponseWriter, r *http.Request) {
 	var c models.Car
 	err := decoder.Decode(&c)
 	checkErr(err)
-	if !carValid(c) {
-		ret := map[string]string{
-			"error": "null values",
-		}
-		r, err := json.Marshal(ret)
-		checkErr(err)
-		io.WriteString(w, string(r))
+	if !c.Validate() {
+		sendErrorJson(w, r, "validation fail")
 	} else {
 		io.WriteString(w, models.UpdateCar(c)+"\n")
 	}
@@ -126,8 +123,12 @@ func updateClient(w http.ResponseWriter, r *http.Request) {
 	var c models.Client
 	err := decoder.Decode(&c)
 	checkErr(err)
-	//validation here
-	io.WriteString(w, models.UpdateClient(c)+"\n")
+	if !c.Validate() {
+		sendErrorJson(w, r, "validation fail")
+	} else {
+		io.WriteString(w, models.UpdateClient(c)+"\n")
+	}
+
 }
 
 func updateOrder(w http.ResponseWriter, r *http.Request) {
@@ -136,8 +137,11 @@ func updateOrder(w http.ResponseWriter, r *http.Request) {
 	var o models.Order
 	err := decoder.Decode(&o)
 	checkErr(err)
-	//validation here
-	io.WriteString(w, models.UpdateOrder(o)+"\n")
+	if !o.Validate() {
+		sendErrorJson(w, r, "validation fail")
+	} else {
+		io.WriteString(w, models.UpdateOrder(o)+"\n")
+	}
 }
 
 func deleteCar(w http.ResponseWriter, r *http.Request) {
@@ -169,18 +173,36 @@ func deleteOrder(w http.ResponseWriter, r *http.Request) {
 
 // i need validator
 
-func carValid(c models.Car) bool {
+/*func carValid(c models.Car) bool {
 	if c.Model == "" || c.Producer == "" || c.Vin == "" || c.Year == "" {
 		return false
 	} else {
 		return true
 	}
 
+}*/
+
+func getClientCars(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("got getClientCars request")
+	decoder := json.NewDecoder(r.Body)
+	var j IdInt
+	err := decoder.Decode(&j)
+	checkErr(err)
+	io.WriteString(w, models.GetClientCars(j.Id)+"\n")
 }
 
-func sendErrorJson(w http.ResponseWriter, r *http.Request) {
+func getClientOrders(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("got getClientOrders request")
+	decoder := json.NewDecoder(r.Body)
+	var j IdInt
+	err := decoder.Decode(&j)
+	checkErr(err)
+	io.WriteString(w, models.GetClientOrders(j.Id)+"\n")
+}
+
+func sendErrorJson(w http.ResponseWriter, r *http.Request, msg string) {
 	ret := map[string]string{
-		"status": "error",
+		"errorStatus": msg,
 	}
 	r_, err := json.Marshal(ret)
 	checkErr(err)

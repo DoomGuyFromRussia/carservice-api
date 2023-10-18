@@ -4,19 +4,25 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	_ "github.com/mattn/go-sqlite3"
 )
 
-type Error struct {
-	Message string
-}
 type Car struct {
 	Id       int `json:"id,string,omitempty"`
 	Producer string
 	Model    string
 	Year     string
 	Vin      string
+}
+
+func (c *Car) Validate() bool {
+	if strings.TrimSpace(c.Model) == "" || strings.TrimSpace(c.Producer) == "" || strings.TrimSpace(c.Vin) == "" || strings.TrimSpace(c.Year) == "" {
+		return false
+	} else {
+		return true
+	}
 }
 
 type Client struct {
@@ -27,6 +33,14 @@ type Client struct {
 	Phone   string
 }
 
+func (c *Client) Validate() bool {
+	if strings.TrimSpace(c.Name) == "" || strings.TrimSpace(c.Surname) == "" || strings.TrimSpace(c.Address) == "" || strings.TrimSpace(c.Phone) == "" {
+		return false
+	} else {
+		return true
+	}
+}
+
 type Order struct {
 	Id          int `json:"id,string,omitempty"`
 	CarId       int
@@ -34,6 +48,14 @@ type Order struct {
 	Date        string
 	Description string
 	Status      string
+}
+
+func (o *Order) Validate() bool {
+	if strings.TrimSpace(o.Date) == "" || strings.TrimSpace(o.Description) == "" || strings.TrimSpace(o.Status) == "" {
+		return false
+	} else {
+		return true
+	}
 }
 
 var Db *sql.DB
