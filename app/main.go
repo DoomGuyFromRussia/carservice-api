@@ -35,6 +35,8 @@ func main() {
 	router.HandleFunc("/api/deleteCar", deleteCar)
 	router.HandleFunc("/api/deleteClient", deleteClient)
 	router.HandleFunc("/api/deleteOrder", deleteOrder)
+
+	fmt.Println(models.GetClientOrders(2))
 	http.ListenAndServe(":8010", router)
 
 }

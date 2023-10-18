@@ -208,6 +208,56 @@ func DeleteOrder(id int) string {
 	return string(r)
 }
 
+func GetClientCars(id int) string {
+	InitDb()
+	rows, err := Db.Query("select * from clientsCars where clientId = $1", id)
+	checkErr(err)
+	var carId, clientId int
+	var cars []Car
+	for rows.Next() {
+		err := rows.Scan(&clientId, &carId)
+		checkErr(err)
+		rowsCar, err := Db.Query("select * from cars where id = $1", carId)
+		checkErr(err)
+		for rowsCar.Next() {
+			var c Car
+			err := rowsCar.Scan(&c.Id, &c.Producer, &c.Model, &c.Year, &c.Vin)
+			checkErr(err)
+			cars = append(cars, c)
+		}
+	}
+	defer Db.Close()
+	b, err := json.Marshal(cars)
+	enc := string(b)
+	checkErr(err)
+	return enc
+}
+
+func GetClientOrders(id int) string {
+	InitDb()
+	rows, err := Db.Query("select * from clientsOrders where clientId = $1", id)
+	checkErr(err)
+	var orderId, clientId int
+	var orders []Order
+	for rows.Next() {
+		err := rows.Scan(&clientId, &orderId)
+		checkErr(err)
+		rowsOrder, err := Db.Query("select * from orders where id = $1", orderId)
+		checkErr(err)
+		for rowsOrder.Next() {
+			var o Order
+			err := rowsOrder.Scan(&o.Id, &o.CarId, &o.ClientId, &o.Date, &o.Description, &o.Status)
+			checkErr(err)
+			orders = append(orders, o)
+		}
+	}
+	defer Db.Close()
+	b, err := json.Marshal(orders)
+	enc := string(b)
+	checkErr(err)
+	return enc
+}
+
 func checkErr(err error) {
 	if err != nil {
 		panic(err)
