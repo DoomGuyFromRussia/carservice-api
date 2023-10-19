@@ -193,6 +193,7 @@ func UpdateOrder(o Order) string {
 
 func DeleteCar(id int) string {
 	InitDb()
+	fmt.Println(id)
 	res, err := Db.Exec("delete from cars where id = $1", id)
 	checkErr(err)
 	fmt.Println(res.RowsAffected())
@@ -252,7 +253,12 @@ func GetClientCars(id int) string {
 	b, err := json.Marshal(cars)
 	enc := string(b)
 	checkErr(err)
-	return enc
+	if enc == "null" {
+		return sendErrorJson("db null error")
+	} else {
+		return enc
+	}
+
 }
 
 func GetClientOrders(id int) string {
@@ -277,11 +283,24 @@ func GetClientOrders(id int) string {
 	b, err := json.Marshal(orders)
 	enc := string(b)
 	checkErr(err)
-	return enc
+	if enc == "null" {
+		return sendErrorJson("db null error")
+	} else {
+		return enc
+	}
 }
 
 func checkErr(err error) {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func sendErrorJson(msg string) string {
+	ret := map[string]string{
+		"errorStatus": msg,
+	}
+	r_, err := json.Marshal(ret)
+	checkErr(err)
+	return string(r_)
 }

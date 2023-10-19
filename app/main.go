@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strconv"
 
 	//"strconv"
 
@@ -23,18 +24,21 @@ type IdInt struct {
 
 func main() {
 	router := mux.NewRouter()
-	router.HandleFunc("/api/getCars", getCars)
-	router.HandleFunc("/api/getClients", getClients)
-	router.HandleFunc("/api/getOrders", getOrders)
-	router.HandleFunc("/api/createCar", createCar)
-	router.HandleFunc("/api/createClient", createClient)
-	router.HandleFunc("/api/createOrder", createOrder)
-	router.HandleFunc("/api/updateCar", updateCar)
-	router.HandleFunc("/api/updateClient", updateClient)
-	router.HandleFunc("/api/updateOrder", updateOrder)
-	router.HandleFunc("/api/deleteCar", deleteCar)
-	router.HandleFunc("/api/deleteClient", deleteClient)
-	router.HandleFunc("/api/deleteOrder", deleteOrder)
+	router.HandleFunc("/api/getCars", getCars).Methods("GET")
+	router.HandleFunc("/api/getClients", getClients).Methods("GET")
+	router.HandleFunc("/api/getOrders", getOrders).Methods("GET")
+	router.HandleFunc("/api/createCar", createCar).Methods("POST")
+	router.HandleFunc("/api/createClient", createClient).Methods("POST")
+	router.HandleFunc("/api/createOrder", createOrder).Methods("POST")
+	router.HandleFunc("/api/updateCar/{id}", updateCar).Methods("PUT")
+	router.HandleFunc("/api/updateClient/{id}", updateClient).Methods("PUT")
+	router.HandleFunc("/api/updateOrder/{id}", updateOrder).Methods("PUT")
+	router.HandleFunc("/api/deleteCar/{id}", deleteCar).Methods("DELETE")
+	router.HandleFunc("/api/deleteClient/{id}", deleteClient).Methods("DELETE")
+	router.HandleFunc("/api/deleteOrder/{id}", deleteOrder).Methods("DELETE")
+
+	router.HandleFunc("/api/getClientOrders/{id}", getClientOrders).Methods("GET")
+	router.HandleFunc("/api/getClientCars/{id}", getClientCars).Methods("GET")
 
 	fmt.Println(models.GetClientOrders(2))
 	http.ListenAndServe(":8010", router)
@@ -110,6 +114,11 @@ func updateCar(w http.ResponseWriter, r *http.Request) {
 	var c models.Car
 	err := decoder.Decode(&c)
 	checkErr(err)
+	vars := mux.Vars(r)
+	id := vars["id"]
+	idInt, err := strconv.Atoi(id)
+	checkErr(err)
+	c.Id = idInt
 	if !c.Validate() {
 		sendErrorJson(w, r, "validation fail")
 	} else {
@@ -123,6 +132,11 @@ func updateClient(w http.ResponseWriter, r *http.Request) {
 	var c models.Client
 	err := decoder.Decode(&c)
 	checkErr(err)
+	vars := mux.Vars(r)
+	id := vars["id"]
+	idInt, err := strconv.Atoi(id)
+	checkErr(err)
+	c.Id = idInt
 	if !c.Validate() {
 		sendErrorJson(w, r, "validation fail")
 	} else {
@@ -137,6 +151,11 @@ func updateOrder(w http.ResponseWriter, r *http.Request) {
 	var o models.Order
 	err := decoder.Decode(&o)
 	checkErr(err)
+	vars := mux.Vars(r)
+	id := vars["id"]
+	idInt, err := strconv.Atoi(id)
+	checkErr(err)
+	o.Id = idInt
 	if !o.Validate() {
 		sendErrorJson(w, r, "validation fail")
 	} else {
@@ -146,29 +165,29 @@ func updateOrder(w http.ResponseWriter, r *http.Request) {
 
 func deleteCar(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("got deleteCar request")
-	decoder := json.NewDecoder(r.Body)
-	var j IdInt
-	err := decoder.Decode(&j)
+	vars := mux.Vars(r)
+	id := vars["id"]
+	idInt, err := strconv.Atoi(id)
 	checkErr(err)
-	io.WriteString(w, models.DeleteCar(j.Id)+"\n")
+	io.WriteString(w, models.DeleteCar(idInt)+"\n")
 }
 
 func deleteClient(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("got deleteClient request")
-	decoder := json.NewDecoder(r.Body)
-	var j IdInt
-	err := decoder.Decode(&j)
+	vars := mux.Vars(r)
+	id := vars["id"]
+	idInt, err := strconv.Atoi(id)
 	checkErr(err)
-	io.WriteString(w, models.DeleteClient(j.Id)+"\n")
+	io.WriteString(w, models.DeleteClient(idInt)+"\n")
 }
 
 func deleteOrder(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("got deleteOrder request")
-	decoder := json.NewDecoder(r.Body)
-	var j IdInt
-	err := decoder.Decode(&j)
+	vars := mux.Vars(r)
+	id := vars["id"]
+	idInt, err := strconv.Atoi(id)
 	checkErr(err)
-	io.WriteString(w, models.DeleteOrder(j.Id)+"\n")
+	io.WriteString(w, models.DeleteOrder(idInt)+"\n")
 }
 
 // i need validator
@@ -184,20 +203,20 @@ func deleteOrder(w http.ResponseWriter, r *http.Request) {
 
 func getClientCars(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("got getClientCars request")
-	decoder := json.NewDecoder(r.Body)
-	var j IdInt
-	err := decoder.Decode(&j)
+	vars := mux.Vars(r)
+	id := vars["id"]
+	idInt, err := strconv.Atoi(id)
 	checkErr(err)
-	io.WriteString(w, models.GetClientCars(j.Id)+"\n")
+	io.WriteString(w, models.GetClientCars(idInt)+"\n")
 }
 
 func getClientOrders(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("got getClientOrders request")
-	decoder := json.NewDecoder(r.Body)
-	var j IdInt
-	err := decoder.Decode(&j)
+	vars := mux.Vars(r)
+	id := vars["id"]
+	idInt, err := strconv.Atoi(id)
 	checkErr(err)
-	io.WriteString(w, models.GetClientOrders(j.Id)+"\n")
+	io.WriteString(w, models.GetClientOrders(idInt)+"\n")
 }
 
 func sendErrorJson(w http.ResponseWriter, r *http.Request, msg string) {
