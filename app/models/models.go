@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"strings"
 
-	_ "github.com/mattn/go-sqlite3"
+	_ "github.com/lib/pq"
 )
 
 type Car struct {
@@ -62,7 +62,9 @@ var Db *sql.DB
 var err error
 
 func InitDb() {
-	Db, err = sql.Open("sqlite3", "db.db")
+	connStr := "user=admin password=admin dbname=production port=5431 sslmode=disable"
+	Db, err = sql.Open("postgres", connStr)
+	fmt.Println(Db)
 	checkErr(err)
 
 }

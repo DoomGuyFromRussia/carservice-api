@@ -196,7 +196,7 @@ func deleteOrder(w http.ResponseWriter, r *http.Request) {
 	if c.Model == "" || c.Producer == "" || c.Vin == "" || c.Year == "" {
 		return false
 	} else {
-		return true
+	goose	return true
 	}
 
 }*/
